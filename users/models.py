@@ -53,11 +53,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Payments(models.Model):
-    CASH = 'cash'
-    CASHLESS = 'cashless'
+    CASH = "cash"
+    CASHLESS = "cashless"
     PAYMENT_CHOICES = [
-        (CASH, 'Наличный расчет'),
-        (CASHLESS, 'Перевод на счет'),
+        (CASH, "Наличный расчет"),
+        (CASHLESS, "Перевод на счет"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь", related_name="payments")
@@ -68,7 +68,7 @@ class Payments(models.Model):
         null=True,
         blank=True,
         verbose_name="Оплаченный курс",
-        related_name="payments"
+        related_name="payments",
     )
     paid_lesson = models.ForeignKey(
         Lesson,
@@ -76,7 +76,7 @@ class Payments(models.Model):
         null=True,
         blank=True,
         verbose_name="Оплаченный урок",
-        related_name="payments"
+        related_name="payments",
     )
     payment_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Сумма оплаты")
     payment_type = models.CharField(choices=PAYMENT_CHOICES, max_length=8, verbose_name="Способ оплаты")

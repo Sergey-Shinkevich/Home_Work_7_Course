@@ -1,10 +1,11 @@
 from django.core.management.base import BaseCommand
-from users.models import User, Payments
+
 from materials.models import Course, Lesson
+from users.models import Payments, User
 
 
 class Command(BaseCommand):
-    help = 'Создает тестовые платежи в базе данных'
+    help = "Создает тестовые платежи в базе данных"
 
     def handle(self, *args, **options):
         # Удаляем старые платежи, чтобы не плодить дубликаты при каждом запуске
@@ -12,30 +13,24 @@ class Command(BaseCommand):
 
         # Создаем тестового пользователя, если его еще нет
         user, created = User.objects.get_or_create(
-            email='test@sky.pro',
+            email="test@sky.pro",
             defaults={
-                'is_staff': True,
-                'is_superuser': True,
-            }
+                "is_staff": True,
+                "is_superuser": True,
+            },
         )
         if created:
-            user.set_password('12345')
+            user.set_password("12345")
             user.save()
 
         # Создаем тестовый курс, если его еще нет
         course, _ = Course.objects.get_or_create(
-            name='Python разработчик',
-            defaults={
-                'description': 'Курс по изучению Django и DRF'
-            }
+            name="Python разработчик", defaults={"description": "Курс по изучению Django и DRF"}
         )
 
         # Создаем тестовый платеж за курс
         payment = Payments.objects.create(
-            user=user,
-            paid_course=course,
-            payment_amount=15000.00,
-            payment_type=Payments.CASH
+            user=user, paid_course=course, payment_amount=15000.00, payment_type=Payments.CASH
         )
 
         self.stdout.write(
