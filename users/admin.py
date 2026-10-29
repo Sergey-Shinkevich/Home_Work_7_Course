@@ -1,3 +1,8 @@
 from django.contrib import admin
+from users.models import User, Payments
 
-# Register your models here.
+# Регистрируем кастомного пользователя
+admin.site.register(User)
+
+# Регистрируем платежи
+admin.site.register(Payments)
