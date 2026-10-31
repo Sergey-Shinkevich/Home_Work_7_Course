@@ -16,15 +16,20 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_permissions(self):
-        if self.action == "create":
-            # Создавать могут только авторизованные, не модераторы
-            permission_classes = [IsAuthenticated]
-        elif self.action in ["update", "partial_update", "destroy", "retrieve"]:
-            # Редактировать, удалять и смотреть деталку могут либо модераторы, либо владельцы (и авторизованные для просмотра)
+        """Настройка прав доступа в зависимости от действия."""
+        if self.action == 'create':
+            # Создавать могут только авторизованные пользователи, которые НЕ являются модераторами
+            permission_classes = [IsAuthenticated, ~IsModerator]
+        elif self.action in ['update', 'partial_update']:
+            # Редактировать может модератор или владелец
             permission_classes = [IsAuthenticated, IsModerator | IsOwner]
+        elif self.action == 'destroy':
+            # Удалять может ТОЛЬКО владелец (модераторам удалять запрещено)
+            permission_classes = [IsAuthenticated, IsOwner]
         else:
-            # Для list (просмотра списка) — авторизованные пользователи
+            # Просмотр списка и детальной информации доступен авторизованным
             permission_classes = [IsAuthenticated]
+
         return [permission() for permission in permission_classes]
 
 
@@ -34,7 +39,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 class LessonCreateAPIView(generics.CreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsAuthenticated]  # Модераторам создание запрещено (позже добавим проверку owner)
+    permission_classes = [IsAuthenticated, ~IsModerator]  # Модераторам создание запрещено (позже добавим проверку owner)
 
     def perform_create(self, serializer):
         """Автоматически привязываем создаваемый урок к текущему пользователю."""
