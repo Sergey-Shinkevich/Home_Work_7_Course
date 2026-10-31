@@ -1,5 +1,6 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
 
 class Course(models.Model):
     name = models.CharField(max_length=150, verbose_name="Название курса")
