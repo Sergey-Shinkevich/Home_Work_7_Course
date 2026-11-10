@@ -1,14 +1,15 @@
 from rest_framework import serializers
-from materials.validators import YouTubeValidator
+
 from materials.models import Course, Lesson, Subscription
+from materials.validators import YouTubeValidator
+
 
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = "__all__"
-        validators = [
-            YouTubeValidator(field='video_url')
-        ]
+        validators = [YouTubeValidator(field="video_url")]
+
 
 class CourseSerializer(serializers.ModelSerializer):
     count_lessons = serializers.SerializerMethodField()
@@ -23,16 +24,13 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         # Получаем текущего пользователя из контекста запроса
-        request = self.context.get('request')
+        request = self.context.get("request")
         if request and request.user.is_authenticated:
             # Проверяем, существует ли подписка этого пользователя на данный курс
             return Subscription.objects.filter(user=request.user, course=obj).exists()
         return False
 
-
     class Meta:
         model = Course
         fields = "__all__"
-        validators = [
-            YouTubeValidator(field='description')
-        ]
+        validators = [YouTubeValidator(field="description")]
