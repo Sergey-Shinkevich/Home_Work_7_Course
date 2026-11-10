@@ -6,12 +6,14 @@ from users.permissions import IsModerator, IsOwner
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
+from materials.paginators import MaterialsPaginator
 
 
 # Viewset для Курсов (CRUD через ModelViewSet)
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
+    pagination_class = MaterialsPaginator
 
     def perform_create(self, serializer):
         """Автоматически привязываем создаваемый курс к текущему пользователю."""
@@ -36,8 +38,6 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 # Generic-классы для Уроков (все 5 операций CRUD)
-
-
 class LessonCreateAPIView(generics.CreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
@@ -52,6 +52,7 @@ class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated]  # Доступно всем авторизованным (включая модераторов)
+    pagination_class = MaterialsPaginator
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
@@ -94,3 +95,4 @@ class SubscriptionCreateAPIView(APIView):
 
         # Возвращаем ответ в API
         return Response({"message": message})
+
