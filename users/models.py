@@ -81,6 +81,9 @@ class Payments(models.Model):
     payment_amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Сумма оплаты")
     payment_type = models.CharField(choices=PAYMENT_CHOICES, max_length=8, verbose_name="Способ оплаты")
 
+    payment_id = models.CharField(max_length=255, verbose_name="ID платежа в Stripe", null=True, blank=True)
+    payment_url = models.URLField(max_length=500, verbose_name="Ссылка на оплату", null=True, blank=True)
+
     def __str__(self):
         item = self.paid_course if self.paid_course else self.paid_lesson
         return f"{self.user} — {item} ({self.payment_amount})"

@@ -1,7 +1,7 @@
-from drf_spectacular.utils import extend_schema_field  # <--- Импортируем декоратор
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from materials.models import Course, Lesson, Payment, Subscription
+from materials.models import Course, Lesson, Subscription
 from materials.validators import YouTubeValidator
 
 
@@ -47,9 +47,3 @@ class SubscriptionResponseSerializer(serializers.Serializer):
 # Сериализатор для входящих данных (что передаем в теле запроса)
 class SubscriptionRequestSerializer(serializers.Serializer):
     course_id = serializers.IntegerField(help_text="ID курса для подписки/отписки")
-
-
-class PaymentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Payment
-        fields = "__all__"
