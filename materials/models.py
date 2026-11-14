@@ -83,3 +83,18 @@ class Subscription(models.Model):
         verbose_name = "Подписка"
         verbose_name_plural = "Подписки"
         unique_together = ("user", "course")
+
+
+class Payment(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь", null=True, blank=True
+    )
+    payment_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата оплаты")
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, verbose_name="Курс", null=True, blank=True)
+    lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, verbose_name="Урок", null=True, blank=True)
+    amount = models.PositiveIntegerField(verbose_name="Сумма оплаты")
+    payment_id = models.CharField(max_length=255, verbose_name="ID платежа в Stripe", null=True, blank=True)
+    payment_url = models.URLField(max_length=500, verbose_name="Ссылка на оплату", null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.course or self.lesson} ({self.amount})"
