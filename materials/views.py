@@ -1,15 +1,15 @@
-from rest_framework import generics, viewsets
+from drf_spectacular.utils import OpenApiParameter, extend_schema  # Импортируем для документации
+from rest_framework import generics, serializers, viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import serializers
-from drf_spectacular.utils import extend_schema, OpenApiParameter # Импортируем для документации
 
-from materials.models import Course, Lesson, Subscription
+from materials.models import Course, Lesson, Payment, Subscription
 from materials.paginators import MaterialsPaginator
-from materials.serializers import CourseSerializer, LessonSerializer, SubscriptionRequestSerializer, \
-    SubscriptionResponseSerializer
+from materials.serializers import (CourseSerializer, LessonSerializer, PaymentSerializer,
+                                   SubscriptionRequestSerializer, SubscriptionResponseSerializer)
+from materials.services import create_stripe_price, create_stripe_product, create_stripe_session
 from users.permissions import IsModerator, IsOwner
 
 
@@ -74,6 +74,7 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated, IsOwner]
 
+
 class SubscriptionCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -81,7 +82,7 @@ class SubscriptionCreateAPIView(APIView):
         summary="Управление подпиской на курс",
         description="Создает подписку, если ее не было, или удаляет, если она уже существовала.",
         request=SubscriptionRequestSerializer,
-        responses={200: SubscriptionResponseSerializer}
+        responses={200: SubscriptionResponseSerializer},
     )
     def post(self, request, *args, **kwargs):
         user = request.user
@@ -98,3 +99,35 @@ class SubscriptionCreateAPIView(APIView):
             message = "подписка добавлена"
 
         return Response({"message": message})
+
+
+class PaymentCreateAPIView(generics.CreateAPIView):
+    serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary="Создание платежа в Stripe",
+        description="Создает запись о платеже в базе данных, регистрирует продукт и сессию в Stripe и возвращает URL для оплаты.",
+    )
+    def perform_create(self, serializer):
+        payment = serializer.save(user=self.request.user)
+
+        # Получаем название курса или урока для продукта в Stripe
+        product_name = (
+            payment.course.name if payment.course else (payment.lesson.name if payment.lesson else "Оплата материала")
+        )
+
+        # 1. Создаем продукт в Stripe
+        product_id = create_stripe_product(product_name)
+
+        # 2. Создаем цену (сумма умножается на 100 в сервисной функции)
+        price_id = create_stripe_price(payment.amount, product_id)
+
+        # 3. Создаем сессию оплаты
+        session_id, payment_url = create_stripe_session(price_id)
+
+        # Сохраняем данные от Stripe в нашу модель
+        payment.payment_id = session_id
+        payment.payment_url = payment_url
+        payment.save()

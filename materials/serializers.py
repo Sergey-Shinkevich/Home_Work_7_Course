@@ -1,7 +1,7 @@
-from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field  # <--- Импортируем декоратор
+from rest_framework import serializers
 
-from materials.models import Course, Lesson, Subscription
+from materials.models import Course, Lesson, Payment, Subscription
 from materials.validators import YouTubeValidator
 
 
@@ -22,7 +22,6 @@ class CourseSerializer(serializers.ModelSerializer):
 
     lessons = LessonSerializer(many=True, read_only=True)
 
-
     @extend_schema_field(serializers.BooleanField)
     def get_is_subscribed(self, obj):
         # Получаем текущего пользователя из контекста запроса
@@ -39,10 +38,18 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = "__all__"
         validators = [YouTubeValidator(field="description")]
 
+
 # Сериализатор для ответа кастомного эндпоинта подписки чтобы Swagger красиво отображал ответ
 class SubscriptionResponseSerializer(serializers.Serializer):
     message = serializers.CharField()
 
+
 # Сериализатор для входящих данных (что передаем в теле запроса)
 class SubscriptionRequestSerializer(serializers.Serializer):
     course_id = serializers.IntegerField(help_text="ID курса для подписки/отписки")
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = "__all__"
