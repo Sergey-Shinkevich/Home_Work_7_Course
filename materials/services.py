@@ -40,3 +40,15 @@ def create_stripe_session(price_id):
         cancel_url="http://127.0.0.1:8000/",
     )
     return session.id, session.url
+
+
+def get_stripe_session_status(session_id):
+    """
+    Получает актуальные данные о сессии из Stripe по её ID.
+    """
+    session = stripe.checkout.Session.retrieve(session_id)
+    return {
+        "status": session.status,  # например, 'complete', 'open', 'expired'
+        "payment_status": session.payment_status,  # 'paid', 'unpaid'
+        "amount_total": session.amount_total,
+    }
