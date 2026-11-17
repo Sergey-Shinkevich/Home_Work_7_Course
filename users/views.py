@@ -94,11 +94,17 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """Динамически выбираем сериализатор в зависимости от действия и владельца."""
         if self.action == "retrieve":
-            # Если это запрос детальной информации, проверяем объект
-            user_obj = self.get_object()
-            if user_obj != self.request.user:
-                # Чужой профиль — показываем урезанные данные
-                return UserPublicSerializer
+            # Для генератора документации возвращаем стандартный сериализатор
+            if getattr(self, "swagger_fake_view", False):
+                return UserSerializer
+
+            # Проверяем pk из URL без вызова self.get_object()
+            pk = self.kwargs.get("pk")
+            if self.request and self.request.user.is_authenticated and pk:
+                # Если запрашивают чужой профиль — показываем урезанные данные
+                if str(self.request.user.pk) != str(pk):
+                    return UserPublicSerializer
+
         # Для своего профиля, списка, создания и обновления — полный сериализатор
         return UserSerializer
 
@@ -113,3 +119,4 @@ class UserViewSet(viewsets.ModelViewSet):
             # Просмотр списка и детальной информации — любому авторизованному
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
+

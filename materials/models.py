@@ -18,6 +18,7 @@ class Course(models.Model):
         blank=True,
         verbose_name="Владелец",
     )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления", null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -25,6 +26,7 @@ class Course(models.Model):
     class Meta:
         verbose_name = "Курс"
         verbose_name_plural = "Курсы"
+        ordering = ("id",)
 
 
 class Lesson(models.Model):
