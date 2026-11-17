@@ -3,6 +3,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 # Загружаем переменные из .env файла
 load_dotenv()
@@ -164,9 +165,17 @@ REDIS_HOST = os.getenv('REDIS_HOST', '127.0.0.1')
 REDIS_PORT = os.getenv('REDIS_PORT', '6379')
 CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
 CELERY_RESULT_BACKEND = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
-CELERY_TIMEZONE = "Europe/Moscow"
+CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+CELERY_BEAT_SCHEDULE = {
+    'deactivate-inactive-users-every-day': {
+        'task': 'users.tasks.deactivate_inactive_users',  # Путь к задаче
+        'schedule': crontab(hour=3, minute=0),  # Запускать каждый день в 3 часа ночи
+
+    },
+}
 
