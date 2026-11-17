@@ -168,4 +168,5 @@ CELERY_TIMEZONE = "Europe/Moscow"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
